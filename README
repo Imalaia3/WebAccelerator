@@ -1,0 +1,142 @@
+WebAccelerator/0.2.1 Python Documentation
+============================================================
+
+Demos in main.py
+
+
+
+TODO: Add request type (GET,POST) support
+
+
+
+FILE: headers.py (import headers)
+
+
+Listener (Scripting) Documentation
+==================================
+
+Listeners are basically Flask routes. They let you
+serve dynamic content to a webpage.
+
+any listener method must have 1 argument with the type
+of "headers.ListenerParams".
+
+
+headers.ListenerParams contains some useful variables:
+
+NAME            TYPE      DESCRIPTION
+--------------------------------------------------------------------------------
+header    - [dictionary ] A dict with the http header data (eg header["Cookie"])
+dest      - [string     ] The requested destination
+variables - [none       ] Not Implemented!
+raw_data  - [bytes      ] The request as bytes.
+conn      - [socket     ] Socket Connection. Used to send data or receive.
+
+
+headers.HTTPHeader() definition (variables and methods)
+=======================================================
+
+NAME       VAR?       TYPE         DESCRIPTION
+---------------------------------------------------------------------------------------------------------
+header     (var) - [dictionary   ] A dict with the capability of setting header values
+return_code(var) - [integer      ] The return code of the response (eg 200)
+cookies    (var) - [string       ] A string that the Set-Cookies are set in (more info in headers.cookie)
+rformatted       - [method->str  ] Builds the actual header (without the length of the body)
+set_redirect     - [method->none ] Allows for easy redirections by changing values in the header
+
+Arguments for methods in headers.HTTPHeader()
+=============================================
+
+NAME           ARGS
+-------------------------------------------------
+rformatted   - No arguments
+set_redirect - to_url -> Redirection URL (string)
+
+
+
+headers.py methods / constants documentation
+============================================
+
+NAME            VAR?          TYPE                    DESCRIPTION
+--------------------------------------------------------------------------------------------------------------------------------------
+VERSION         (var) - [string                  ] HTTP Version Header (HTTP/1.1)
+SERVER_STRING   (var) - [string                  ] Server string (WebAccelerator/xx.xx.xx)
+RETURN_CODES    (var) - [dictionary              ] HTTP Status codes. (eg key:400 -> Not Found)
+CONTENT_TYPES   (var) - [dictionary              ] Content-Type string (eg key:html -> text/html)
+FILE_EXTENSIONS (var) - [dictionary              ] File Extension to CONTENT_TYPES key (mp3 -> audio/mpeg)
+parse_request_header  - [method->tuple(dict,str) ] Take a raw header, parse it to a dict and also get the top part of the header
+generate_code         - [method->string          ] Generate an HTML page from a code (eg 404) that containes the RETURN_CODES string
+cookie                - [method->string          ] Create a Set-Cookie string
+cookies_from_string   - [method->dictionary      ] Parse a Cookie: header to a dictionary
+accepts_enc           - [method->boolean         ] Check if an Accept-Encoding header supports a type X (eg gzip)
+TODO: Add HTTPHeader
+TODO: Add ListenerParams
+
+Arguments for methods in headers:
+
+NAME                   ARGS
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+parse_request_header - data -> Request raw data (bytes)
+generate_code        - code -> Status code of reques. Must be in RETURN_CODES (integer)
+cookie               - name:str: Cookie Name | value:str: Cookie Value | max_age=60: Max cookie age seconds | SameSite="Strict":Same Site | path="/": Cookie Path
+cookies_from_string  - string -> Cooki string (string)
+accepts_enc          - enc_type -> Encoding Type (string) string -> Accept-Encoding String (string)
+
+
+
+FILE: server.py (import server)
+
+server.py implements logging. You can change the level
+
+
+headers.py methods / values documentation
+============================================
+
+NAME             VAR?    TYPE             DESC
+-----------------------------------------------------------------------------------------------------------
+USE_LOCAL_FILES (var) - [boolean        ] Should Use www folder (more info about www folder in server.HTTPServer docs) If the requested page has no listener, serve local file ***
+_client_handler       - [method-> None  ] Internal function. Used to handle incoming connections
+HTTPServer            - [class          ] Actual server class (more info below)
+gzip_bytes            - [method-> bytes ] Uses GZIP to compress a byte string to a compressed byte string
+get_file              - [method-> bytes ] Grabs a file from the www_folder and returns its bytes
+
+*** NOTE: If USE_LOCAL_FILES is set to False only listeners will work but if a page has no listeners, the server will raise an Exception, causing an Internal Server Error (code 500)
+
+Arguments for methods in server.py
+==================================
+
+NAME         ARGS
+--------------------------------------------------------------------------------------------------------------
+gzip_bytes - b -> bytes of uncompressed file (bytes)
+get_file   - filename -> name of file (or path) (string) www_dir -> (pre-set to "www/") root of files (string)
+
+
+
+server.HTTPServer() definition (variables and methods)
+=======================================================
+
+List of initializers (docs below):
+==================================
+port
+ip
+file_dir
+
+NAME               VAR?    TYPE               DESC
+-------------------------------------------------------------------------------------------------------------------------------------
+port               (var) - [integer       ] Server port (pre-set to 8080) In Linux/Unix ports under 1024 (like 80) are privilaged
+ip                 (var) - [string        ] Server IP (pre-set to '0.0.0.0')
+www_dir (file_dir) (var) - [string        ] Where should the file structure of the website begin (eg /about.html) (pre-set to 'www/')
+server             (var) - [socket        ] Actual server socket
+listeners          (var) - [dictionary    ] List of listeners
+set_listener             - [method-> None ] Adds a listener to a web page via the listeners variable
+startup                  - [method-> None ] Starts the HTTP Server
+
+
+
+Arguments for methods in server.HTTPServer()
+============================================
+
+NAME           DESCRIPTION
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+set_listener - url -> the relative path of the page you want to listen (eg /login)(string) method -> reference to the function that triggers when a listener is triggered (method)
+startup      - No arguments
